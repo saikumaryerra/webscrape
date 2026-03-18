@@ -113,3 +113,25 @@ def save_recipe(recipe, output_dir):
 
     logger.info(f"Saved: {filepath}")
     return filepath
+
+
+def save_html(html, title, output_dir):
+    """Save raw HTML content to a file.
+
+    Returns the file path on success, None on failure.
+    """
+    if not html or not title:
+        logger.warning("Cannot save HTML without content and title")
+        return None
+
+    html_dir = os.path.join(output_dir, "html")
+    os.makedirs(html_dir, exist_ok=True)
+
+    filename = _sanitize_filename(title) + ".html"
+    filepath = os.path.join(html_dir, filename)
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    logger.info(f"Saved HTML: {filepath}")
+    return filepath

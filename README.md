@@ -74,7 +74,7 @@ Each recipe is saved as a Markdown file (e.g. `palak-paneer.md`) with:
 
 ## How It Works
 
-1. **Fetching** (`fetcher.py`) -- HTTP session with browser-like headers, retry with exponential backoff
+1. **Fetching** (`fetcher.py`) -- Uses `curl_cffi` to impersonate Chrome's TLS fingerprint (bypasses Cloudflare), with retry and exponential backoff
 2. **Parsing** (`parser.py`) -- Extracts recipe data from JSON-LD structured data (primary) or WPRM HTML classes (fallback)
 3. **Writing** (`markdown_writer.py`) -- Converts recipe data to Markdown and saves to disk
 

@@ -8,7 +8,7 @@ object MarkdownWriter {
 
     private const val TAG = "MarkdownWriter"
 
-    fun toMarkdown(recipe: Recipe): String = buildString {
+    fun toMarkdown(recipe: Recipe, localImagePath: String? = null): String = buildString {
         appendLine("# ${recipe.title}")
         appendLine()
 
@@ -17,8 +17,9 @@ object MarkdownWriter {
             appendLine()
         }
 
-        if (recipe.imageUrl != null) {
-            appendLine("![${recipe.title}](${recipe.imageUrl})")
+        val imageRef = localImagePath ?: recipe.imageUrl
+        if (imageRef != null) {
+            appendLine("![${recipe.title}]($imageRef)")
             appendLine()
         }
 
@@ -86,7 +87,7 @@ object MarkdownWriter {
         if (recipe.keywords.isNotEmpty()) appendLine("*Keywords: ${recipe.keywords.joinToString(", ")}*")
     }
 
-    fun saveRecipe(context: Context, recipe: Recipe): File? {
+    fun saveRecipe(context: Context, recipe: Recipe, localImagePath: String? = null): File? {
         val dir = File(context.getExternalFilesDir(null), "recipes")
         dir.mkdirs()
 
@@ -94,11 +95,49 @@ object MarkdownWriter {
         val file = File(dir, filename)
 
         return try {
-            file.writeText(toMarkdown(recipe))
+            file.writeText(toMarkdown(recipe, localImagePath))
             Log.i(TAG, "Saved: ${file.absolutePath}")
             file
         } catch (e: Exception) {
             Log.e(TAG, "Failed to save ${recipe.title}: ${e.message}")
+            null
+        }
+    }
+
+    fun saveImage(context: Context, imageBytes: ByteArray, title: String, imageUrl: String): File? {
+        val dir = File(context.getExternalFilesDir(null), "recipes/images")
+        dir.mkdirs()
+
+        val extension = imageUrl.substringAfterLast('.', "jpg")
+            .substringBefore('?')
+            .lowercase()
+            .let { if (it in listOf("jpg", "jpeg", "png", "webp", "gif")) it else "jpg" }
+        val filename = sanitizeFilename(title) + ".$extension"
+        val file = File(dir, filename)
+
+        return try {
+            file.writeBytes(imageBytes)
+            Log.i(TAG, "Saved image: ${file.absolutePath}")
+            file
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save image for $title: ${e.message}")
+            null
+        }
+    }
+
+    fun saveHtml(context: Context, html: String, title: String): File? {
+        val dir = File(context.getExternalFilesDir(null), "recipes/html")
+        dir.mkdirs()
+
+        val filename = sanitizeFilename(title) + ".html"
+        val file = File(dir, filename)
+
+        return try {
+            file.writeText(html)
+            Log.i(TAG, "Saved HTML: ${file.absolutePath}")
+            file
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save HTML for $title: ${e.message}")
             null
         }
     }

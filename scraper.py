@@ -8,7 +8,7 @@ import time
 
 from fetcher import create_session, fetch_page, fetch_sitemap
 from parser import parse_recipe
-from markdown_writer import save_recipe
+from markdown_writer import save_recipe, save_html
 
 logging.basicConfig(
     level=logging.INFO,
@@ -112,6 +112,7 @@ def main():
 
         filepath = save_recipe(recipe, args.output)
         if filepath:
+            save_html(html, recipe["title"], args.output)
             succeeded += 1
         else:
             failed += 1

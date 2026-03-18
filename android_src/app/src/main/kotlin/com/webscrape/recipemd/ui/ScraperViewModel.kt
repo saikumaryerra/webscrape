@@ -92,7 +92,22 @@ class ScraperViewModel(application: Application) : AndroidViewModel(application)
                 continue
             }
 
-            val file = MarkdownWriter.saveRecipe(getApplication(), recipe)
+            // Download and save image if available
+            var localImagePath: String? = null
+            if (recipe.imageUrl != null) {
+                val imageBytes = Fetcher.fetchImage(recipe.imageUrl)
+                if (imageBytes != null) {
+                    val imageFile = MarkdownWriter.saveImage(
+                        getApplication(), imageBytes, recipe.title, recipe.imageUrl
+                    )
+                    if (imageFile != null) {
+                        localImagePath = "images/${imageFile.name}"
+                        log("  Saved image: ${imageFile.name}")
+                    }
+                }
+            }
+
+            val file = MarkdownWriter.saveRecipe(getApplication(), recipe, localImagePath)
             if (file != null) {
                 MarkdownWriter.saveHtml(getApplication(), html, recipe.title)
                 log("  Saved: ${file.name}")

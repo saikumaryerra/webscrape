@@ -33,6 +33,23 @@ object Fetcher {
         }
         .build()
 
+    suspend fun fetchImage(url: String): ByteArray? {
+        return try {
+            val request = Request.Builder().url(url).build()
+            client.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    response.body?.bytes()
+                } else {
+                    Log.w(TAG, "Image fetch HTTP ${response.code} for $url")
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to fetch image $url: ${e.message}")
+            null
+        }
+    }
+
     suspend fun fetchPage(url: String, retries: Int = 3): String? {
         for (attempt in 0 until retries) {
             try {

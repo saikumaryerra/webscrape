@@ -25,7 +25,6 @@ object Fetcher {
                 )
                 .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                 .header("Accept-Language", "en-US,en;q=0.9")
-                .header("Accept-Encoding", "gzip, deflate")
                 .header("DNT", "1")
                 .header("Connection", "keep-alive")
                 .header("Upgrade-Insecure-Requests", "1")
@@ -38,11 +37,12 @@ object Fetcher {
         for (attempt in 0 until retries) {
             try {
                 val request = Request.Builder().url(url).build()
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    return response.body?.string()
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) {
+                        return response.body?.string()
+                    }
+                    Log.w(TAG, "HTTP ${response.code} for $url")
                 }
-                Log.w(TAG, "HTTP ${response.code} for $url")
             } catch (e: Exception) {
                 Log.w(TAG, "Attempt ${attempt + 1}/$retries failed for $url: ${e.message}")
             }

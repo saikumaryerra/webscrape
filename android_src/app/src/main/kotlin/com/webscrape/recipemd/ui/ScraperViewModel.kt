@@ -94,6 +94,7 @@ class ScraperViewModel(application: Application) : AndroidViewModel(application)
 
             val file = MarkdownWriter.saveRecipe(getApplication(), recipe)
             if (file != null) {
+                MarkdownWriter.saveHtml(getApplication(), html, recipe.title)
                 log("  Saved: ${file.name}")
                 succeeded++
                 _state.value = _state.value.copy(

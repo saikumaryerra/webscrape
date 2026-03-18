@@ -103,6 +103,23 @@ object MarkdownWriter {
         }
     }
 
+    fun saveHtml(context: Context, html: String, title: String): File? {
+        val dir = File(context.getExternalFilesDir(null), "recipes/html")
+        dir.mkdirs()
+
+        val filename = sanitizeFilename(title) + ".html"
+        val file = File(dir, filename)
+
+        return try {
+            file.writeText(html)
+            Log.i(TAG, "Saved HTML: ${file.absolutePath}")
+            file
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save HTML for $title: ${e.message}")
+            null
+        }
+    }
+
     private fun sanitizeFilename(title: String): String {
         return title.lowercase()
             .replace(Regex("[^\\w\\s-]"), "")

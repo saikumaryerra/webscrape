@@ -3,30 +3,19 @@ import time
 import logging
 import xml.etree.ElementTree as ET
 
-import requests
+from curl_cffi import requests as cffi_requests
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
-    "DNT": "1",
-    "Connection": "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
-}
-
 
 def create_session():
-    """Create a requests session with browser-like headers."""
-    session = requests.Session()
-    session.headers.update(HEADERS)
+    """Create a curl_cffi session that impersonates a real browser.
+
+    curl_cffi uses the same TLS fingerprint as a real Chrome browser,
+    which bypasses Cloudflare and similar bot detection.
+    """
+    session = cffi_requests.Session(impersonate="chrome")
     return session
 
 
@@ -43,7 +32,7 @@ def fetch_page(url, session=None, retries=3):
             response = session.get(url, timeout=30)
             response.raise_for_status()
             return response.text
-        except requests.RequestException as e:
+        except Exception as e:
             wait = 2 ** attempt
             logger.warning(f"Attempt {attempt + 1}/{retries} failed for {url}: {e}")
             if attempt < retries - 1:
